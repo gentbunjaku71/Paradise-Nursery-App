@@ -1,10 +1,49 @@
-// src/data/plants.js
-export const plants = [
-  { id: 1, name: "Fiddle Leaf Fig", price: 45, image: "https://via.placeholder.com/150" },
-  { id: 2, name: "Snake Plant", price: 25, image: "https://via.placeholder.com/150" },
-  { id: 3, name: "Monstera Deliciosa", price: 35, image: "https://via.placeholder.com/150" },
-  { id: 4, name: "Peace Lily", price: 20, image: "https://via.placeholder.com/150" },
-  { id: 5, name: "Pothos", price: 15, image: "https://via.placeholder.com/150" },
-  { id: 6, name: "Aloe Vera", price: 10, image: "https://via.placeholder.com/150" },
-];
+// src/redux/cartSlice.js
+import { createSlice } from "@reduxjs/toolkit";
 
+const initialState = {
+  items: [],
+  totalQuantity: 0,
+  totalPrice: 0,
+};
+
+const cartSlice = createSlice({
+  name: "cart",
+  initialState,
+  reducers: {
+    addItem: (state, action) => {
+      const existing = state.items.find(i => i.id === action.payload.id);
+      if (existing) existing.quantity += 1;
+      else state.items.push({ ...action.payload, quantity: 1 });
+      state.totalQuantity += 1;
+      state.totalPrice += action.payload.price;
+    },
+    removeItem: (state, action) => {
+      const index = state.items.findIndex(i => i.id === action.payload);
+      if (index >= 0) {
+        state.totalQuantity -= state.items[index].quantity;
+        state.totalPrice -= state.items[index].price * state.items[index].quantity;
+        state.items.splice(index, 1);
+      }
+    },
+    increaseQuantity: (state, action) => {
+      const item = state.items.find(i => i.id === action.payload);
+      if (item) {
+        item.quantity += 1;
+        state.totalQuantity += 1;
+        state.totalPrice += item.price;
+      }
+    },
+    decreaseQuantity: (state, action) => {
+      const item = state.items.find(i => i.id === action.payload);
+      if (item && item.quantity > 1) {
+        item.quantity -= 1;
+        state.totalQuantity -= 1;
+        state.totalPrice -= item.price;
+      }
+    },
+  },
+});
+
+export const { addItem, removeItem, increaseQuantity, decreaseQuantity } = cartSlice.actions;
+export default cartSlice.reducer;
